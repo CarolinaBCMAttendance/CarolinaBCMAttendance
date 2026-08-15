@@ -1,3 +1,5 @@
+import { BCM_CONFIG } from "./config.js";
+
 const today = new Date();
 const currentDay = today.getDay();
 let daysToSubtract = (currentDay - 2 + 7) % 7;
@@ -17,7 +19,15 @@ const CARDS = document.querySelector(".page-layout_cards");
 const STATUS = document.querySelector(".page-layout_status");
 const FOOTER = document.querySelector(".page-layout_footer");
 
-const API_BASE = "/api/v1/bcm";
+function resolveApiBase() {
+  const configured = String(BCM_CONFIG?.apiBaseUrl || "").trim();
+  if (configured) {
+    return configured.replace(/\/+$/, "");
+  }
+  return "/api/v1/bcm";
+}
+
+const API_BASE = resolveApiBase();
 const SiteStatus = {
   CLASSES: 0,
   TIMES: 1,

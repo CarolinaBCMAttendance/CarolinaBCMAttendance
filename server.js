@@ -9,6 +9,35 @@ const CLASSES_FILE = path.join(DATA_DIR, "classes.json");
 const PEOPLE_FILE = path.join(DATA_DIR, "people.json");
 const ATTENDANCE_FILE = path.join(DATA_DIR, "attendance.json");
 
+/**
+ * Build CORS options for same-origin or split hosting.
+ * - Unset / empty / "*": allow any origin (fine for local/dev)
+ * - CORS_ORIGIN / FRONTEND_ORIGIN: comma-separated allowlist, e.g.
+ *   "https://attendance.example.com,http://localhost:5500"
+ */
+function createCorsOptions(env = process.env) {
+  const raw = String(env.CORS_ORIGIN || env.FRONTEND_ORIGIN || "").trim();
+  if (!raw || raw === "*") {
+    return { origin: true };
+  }
+
+  const allowed = raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return {
+    origin(origin, callback) {
+      // Non-browser clients and same-origin navigations may omit Origin.
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+  };
+}
+
 async function readJson(filePath, fallback) {
   try {
     const raw = await fs.readFile(filePath, "utf8");
@@ -49,9 +78,14 @@ function parseNames(names) {
   return [];
 }
 
-function createApp() {
+function createApp(options = {}) {
   const app = express();
-  app.use(cors());
+  const corsOptions =
+    options.corsOptions !== undefined
+      ? options.corsOptions
+      : createCorsOptions(options.env || process.env);
+
+  app.use(cors(corsOptions));
   app.use(express.json());
   app.use(express.static(__dirname));
 
@@ -303,4 +337,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createApp, fullName, parseNames, normalizeName };
+module.exports = {
+  createApp,
+  createCorsOptions,
+  fullName,
+  parseNames,
+  normalizeName,
+};

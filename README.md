@@ -56,3 +56,29 @@ JSON seed files live in `data/`:
 ```bash
 npm test
 ```
+
+## Hosting the site and API on different servers
+
+1. **API server** — run `npm start` (or your process manager) and allow your frontend origin:
+
+```bash
+CORS_ORIGIN=https://your-frontend.example.com npm start
+```
+
+Use a comma-separated list for multiple frontends:
+
+```bash
+CORS_ORIGIN=https://attendance.example.com,http://localhost:5500 npm start
+```
+
+Leave `CORS_ORIGIN` unset (or set `*`) to allow any origin.
+
+2. **Frontend server** — host the static files (`index.html`, `index.js`, `config.js`, CSS, images). In `config.js`, set the API base URL:
+
+```js
+export const BCM_CONFIG = {
+  apiBaseUrl: "https://your-api.example.com/api/v1/bcm",
+};
+```
+
+Same-origin setups (API also serves the static site via `npm start`) can leave `apiBaseUrl` empty.
