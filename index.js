@@ -232,12 +232,18 @@ MEMBERS_CLASS.addEventListener("click", (event) => {
 
 SUBMIT_BUTTON.addEventListener("click", async () => {
     const names = selected_members.join(",");
+    console.log(DATE);
+    console.log(selected_group);
+    console.log(names);
+    console.log();
     const options = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: `{ "date": ${DATE},
-                "group_name": ${selected_group},
-                "names": ${names} }`
+        body: JSON.stringify({
+        date: DATE,
+        group_name: selected_group,
+        names: names
+        })
     }
     try {
         const response = await fetch(RECORD_URL, options);
