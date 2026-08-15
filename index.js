@@ -30,9 +30,10 @@ let search = "";
 let selected_group = "";
 let selected_time  = "";
 let selected_members = [];
-const RECORD_URL = 'http://localhost:3000/api/v1/bcm/record';
-const STUDENT_URL = 'http://localhost:3000/api/v1/bcm/';
-const GROUP_URL = 'http://localhost:3000/api/v1/bcm/groups';
+const DOMAIN = 'http://99.138.66.35:80/api/v1/bcm';
+const RECORD_URL = `${DOMAIN}/record`;
+const STUDENT_URL = `${DOMAIN}/`;
+const GROUP_URL = `${DOMAIN}/groups`;
 async function getReq(url) {
     const options = {method: 'GET'};
     try {
