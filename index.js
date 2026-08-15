@@ -1,257 +1,361 @@
-// Classes/sections.
 const today = new Date();
 const currentDay = today.getDay();
 let daysToSubtract = (currentDay - 2 + 7) % 7;
 if (daysToSubtract === 0) {
-    daysToSubtract = 7;
+  daysToSubtract = 7;
 }
 const lastTuesday = new Date(today);
 lastTuesday.setDate(today.getDate() - daysToSubtract);
 const yyyy = lastTuesday.getFullYear();
-const mm = String(lastTuesday.getMonth() + 1).padStart(2, '0');
-const dd = String(lastTuesday.getDate()).padStart(2, '0');
+const mm = String(lastTuesday.getMonth() + 1).padStart(2, "0");
+const dd = String(lastTuesday.getDate()).padStart(2, "0");
 const DATE = `${yyyy}-${mm}-${dd}`;
-const PROMPT_CLASS = document.querySelector(".page-layout_prompt");
-const SUBMIT_BUTTON = document.querySelector(".submit_button");
-const MEMBERS_CLASS = document.querySelector(".page-layout_members");
-const TABLE_CLASS = document.querySelector(".page-layout_table");
-const FOOTER_CLASS = document.querySelector(".page-layout_footer");
-// Like an enum to represent each state.
+
+const PROMPT = document.querySelector(".page-layout_prompt");
+const SELECTED = document.querySelector(".page-layout_selected");
+const CARDS = document.querySelector(".page-layout_cards");
+const STATUS = document.querySelector(".page-layout_status");
+const FOOTER = document.querySelector(".page-layout_footer");
+
+const API_BASE = "/api/v1/bcm";
 const SiteStatus = {
-    GROUPS: 0,
-    TIMES: 1,
-    MEMBERS: 2,
+  CLASSES: 0,
+  TIMES: 1,
+  MEMBERS: 2,
 };
-// Global state of site variable.
-let state  = SiteStatus.GROUPS;
-// Global user search parameter.
+
+let state = SiteStatus.CLASSES;
 let search = "";
-// Input variables.
-let selected_group = "";
-let selected_time  = "";
-let selected_members = [];
-const RECORD_URL = 'http://localhost:3000/api/v1/bcm/record';
-const STUDENT_URL = 'http://localhost:3000/api/v1/bcm/';
-const GROUP_URL = 'http://localhost:3000/api/v1/bcm/groups';
+let selectedClass = null;
+let selectedTime = "";
+let selectedMembers = [];
+let classPeople = [];
+
+const SESSIONS = [{ time: "7:30" }, { time: "9:30" }];
+
 async function getReq(url) {
-    const options = {method: 'GET'};
-    try {
-        const response = await fetch(url, options);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error(error);
-    }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+  return response.json();
 }
 
-// Assign table values.
-const GROUPS = await getReq(GROUP_URL);
-const PEOPLE = await getReq(STUDENT_URL);
-const SESSIONS = [
-    { time: "7:30" },
-    { time: "9:30" },
-];
-// Clears the screen.
-function revert(just_table = false) {
-    if (!just_table) {
-        PROMPT_CLASS.replaceChildren();
-    }
-    TABLE_CLASS.replaceChildren();
+const CLASSES = await getReq(`${API_BASE}/classes`);
+
+function personLabel(person) {
+  if (person.firstName && person.lastName) {
+    return `${person.firstName} ${person.lastName}`;
+  }
+  return person.name || "";
 }
-// Renders the prompt for the user.
-function renderPrompt(top, bottom) {
-    const big_prompt   = document.createElement("h1");
-    const small_prompt = document.createElement("h2");
-    big_prompt.textContent   = top;
-    small_prompt.textContent = bottom;
-    PROMPT_CLASS.append(big_prompt, small_prompt);
+
+function setStatus(message, isError = false) {
+  STATUS.textContent = message || "";
+  STATUS.classList.toggle("is-error", Boolean(isError));
+}
+
+function renderPrompt(top, bottom, { showSearch = true, showSubmit = false } = {}) {
+  PROMPT.replaceChildren();
+
+  const bigPrompt = document.createElement("h1");
+  const smallPrompt = document.createElement("h2");
+  bigPrompt.textContent = top;
+  smallPrompt.textContent = bottom;
+  PROMPT.append(bigPrompt, smallPrompt);
+
+  if (showSubmit) {
+    const submitButton = document.createElement("button");
+    submitButton.type = "button";
+    submitButton.className = "submit_button";
+    submitButton.textContent = "CHECK IN";
+    submitButton.disabled = selectedMembers.length === 0;
+    submitButton.addEventListener("click", submitAttendance);
+    PROMPT.appendChild(submitButton);
+  }
+
+  if (showSearch) {
     const searchBar = document.createElement("input");
-    searchBar.type  = "text";
+    searchBar.type = "search";
     searchBar.value = search;
-    switch(state) {
-    case SiteStatus.GROUPS:
-        searchBar.placeholder =
-            "Type a group leaders' name";
-        SUBMIT_BUTTON.style.display = "none";
-        break;
-    case SiteStatus.MEMBERS:
-        SUBMIT_BUTTON.style.display = "";
-        searchBar.placeholder = "Type a member's name";
-        break;
-    default:
-        searchBar.placeholder = "";
-    }
-    PROMPT_CLASS.appendChild(SUBMIT_BUTTON);
-    // Hide search bar on the time-selection screen.
-    if (state !== SiteStatus.TIMES) {
-        PROMPT_CLASS.appendChild(searchBar);
-    }
-}
-// Gets the visible label for a row.
-function getRowText(row) {
-    if (typeof row.name !== "undefined") {
-        return row.name;
-    }
-    if (typeof row.time !== "undefined") {
-        return row.time;
-    }
-    return "";
-}
-// Renders the table with filtering.
-function renderTable() {
-    let ROWS = [];
-    switch (state) {
-    case SiteStatus.GROUPS:
-        ROWS = GROUPS;
-        break;
-    case SiteStatus.TIMES:
-        ROWS = SESSIONS;
-        break;
-    case SiteStatus.MEMBERS:
-        ROWS = PEOPLE;
-        break;
-    default:
-        ROWS = [];
-        break;
-    }
-    const tableBody = document.createElement("tbody");
-    const normalizedSearch = search.trim().toLowerCase();
-    ROWS
-        .filter((row) => {
-            if (state === SiteStatus.TIMES) {
-                return true;
-            }
-            const rowText = getRowText(row).toLowerCase();
-            return rowText.includes(normalizedSearch);
-        })
-        .forEach((row) => {
-            const tr   =
-                  document.createElement("tr");
-            const cell =
-                  document.createElement("th");
-            cell.textContent = getRowText(row);
-            tr.appendChild(cell);
-            tableBody.appendChild(tr);
-        });
-    TABLE_CLASS.appendChild(tableBody);
+    searchBar.placeholder =
+      state === SiteStatus.CLASSES
+        ? "Type a class name"
+        : "Type a first or last name";
+    searchBar.setAttribute("aria-label", "Filter list");
+    PROMPT.appendChild(searchBar);
+  }
 }
 
-function renderMembers() {
-    MEMBERS_CLASS.replaceChildren();
-    const tableBody = document.createElement("tbody");
-    selected_members.forEach((row) => {
-        const tr = document.createElement("tr");
-        const cell = document.createElement("th");
-        cell.style = "background: green;";
-        cell.textContent = row;
-        tr.appendChild(cell);
-        tableBody.appendChild(tr);
+function createCard({ title, subtitle = "", selected = false, dataset = {} }) {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = `person-card${selected ? " is-selected" : ""}`;
+  Object.entries(dataset).forEach(([key, value]) => {
+    card.dataset[key] = value;
+  });
+
+  const titleEl = document.createElement("span");
+  titleEl.className = "person-card_name";
+  titleEl.textContent = title;
+  card.appendChild(titleEl);
+
+  if (subtitle) {
+    const subtitleEl = document.createElement("span");
+    subtitleEl.className = "person-card_meta";
+    subtitleEl.textContent = subtitle;
+    card.appendChild(subtitleEl);
+  }
+
+  return card;
+}
+
+function renderSelected() {
+  SELECTED.replaceChildren();
+  if (selectedMembers.length === 0) {
+    return;
+  }
+
+  const heading = document.createElement("h3");
+  heading.textContent = `Checking in (${selectedMembers.length})`;
+  SELECTED.appendChild(heading);
+
+  const list = document.createElement("div");
+  list.className = "person-card-grid person-card-grid--selected";
+
+  selectedMembers.forEach((member) => {
+    const card = createCard({
+      title: personLabel(member),
+      subtitle: "Tap to remove",
+      selected: true,
+      dataset: { personId: member.id, action: "remove" },
+    });
+    list.appendChild(card);
+  });
+
+  SELECTED.appendChild(list);
+}
+
+function renderCards() {
+  CARDS.replaceChildren();
+  const grid = document.createElement("div");
+  grid.className = "person-card-grid";
+  const normalizedSearch = search.trim().toLowerCase();
+
+  if (state === SiteStatus.CLASSES) {
+    CLASSES.filter((klass) =>
+      klass.name.toLowerCase().includes(normalizedSearch)
+    ).forEach((klass) => {
+      const leaders = (klass.leaders || []).slice(0, 2).join(", ");
+      grid.appendChild(
+        createCard({
+          title: klass.name,
+          subtitle: leaders ? `Leaders: ${leaders}` : "BCM class",
+          dataset: { classId: klass.id, action: "select-class" },
+        })
+      );
+    });
+  } else if (state === SiteStatus.TIMES) {
+    SESSIONS.forEach((session) => {
+      grid.appendChild(
+        createCard({
+          title: session.time,
+          subtitle: "Meeting time",
+          dataset: { time: session.time, action: "select-time" },
+        })
+      );
+    });
+  } else if (state === SiteStatus.MEMBERS) {
+    classPeople
+      .filter((person) => {
+        const label = personLabel(person).toLowerCase();
+        const first = (person.firstName || "").toLowerCase();
+        const last = (person.lastName || "").toLowerCase();
+        return (
+          label.includes(normalizedSearch) ||
+          first.includes(normalizedSearch) ||
+          last.includes(normalizedSearch)
+        );
+      })
+      .forEach((person) => {
+        const alreadySelected = selectedMembers.some(
+          (member) => member.id === person.id
+        );
+        if (alreadySelected) {
+          return;
+        }
+        grid.appendChild(
+          createCard({
+            title: personLabel(person),
+            subtitle: `${person.firstName} · ${person.lastName}`,
+            dataset: { personId: person.id, action: "select-person" },
+          })
+        );
+      });
+  }
+
+  CARDS.appendChild(grid);
+}
+
+async function loadClassPeople(classId) {
+  const payload = await getReq(`${API_BASE}/classes/${classId}/people`);
+  classPeople = payload.people || [];
+}
+
+async function changeState(newState = state) {
+  state = newState;
+  search = "";
+  setStatus("");
+
+  switch (state) {
+    case SiteStatus.CLASSES:
+      selectedClass = null;
+      selectedTime = "";
+      selectedMembers = [];
+      classPeople = [];
+      renderPrompt("Select Your Class", "Start typing a class name");
+      renderSelected();
+      renderCards();
+      break;
+    case SiteStatus.TIMES:
+      renderPrompt("Select Your Time", "Choose a session", {
+        showSearch: false,
+      });
+      renderSelected();
+      renderCards();
+      break;
+    case SiteStatus.MEMBERS:
+      renderPrompt("Select Attendees", "Tap a name card to check in", {
+        showSubmit: true,
+      });
+      renderSelected();
+      renderCards();
+      break;
+    default:
+      changeState(SiteStatus.CLASSES);
+  }
+}
+
+async function submitAttendance() {
+  if (!selectedClass || selectedMembers.length === 0) {
+    setStatus("Select at least one registered person.", true);
+    return;
+  }
+
+  setStatus("Saving attendance…");
+
+  try {
+    const response = await fetch(`${API_BASE}/check-in`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: DATE,
+        classId: selectedClass.id,
+        class_name: selectedClass.name,
+        group_name: selectedClass.name,
+        time: selectedTime,
+        peopleIds: selectedMembers.map((member) => member.id),
+        names: selectedMembers.map((member) => personLabel(member)),
+      }),
     });
 
-    MEMBERS_CLASS.appendChild(tableBody);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to record attendance");
+    }
+
+    setStatus(
+      `Checked in ${data.record.attendees.length} for ${selectedClass.name} (${selectedTime || "no time"}).`
+    );
+    selectedMembers = [];
+    renderSelected();
+    renderPrompt("Select Attendees", "Tap a name card to check in", {
+      showSubmit: true,
+    });
+    renderCards();
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message || "Check-in failed.", true);
+  }
 }
 
-// Render site again.
-function changeState(newState = state) {
-    state  = newState;
-    search = "";
-    revert();
-    switch (state) {
-    case SiteStatus.GROUPS:
-        renderPrompt(
-            "Select Your Group",
-            "Start typing"
-        );
-        renderTable();
-        
-        break;
-    case SiteStatus.TIMES:
-        renderPrompt(
-            "Select Your Time",
-            "Choose a session"
-        );
-        renderTable();
-        break;
-    case SiteStatus.MEMBERS:
-        renderPrompt(
-            "Select Your Group Members",
-            "Search below"
-        );
-        renderTable();
-        break;
-    default:
-        changeState(SiteStatus.GROUPS);
-        break;
-    }
-}
-// Initial render.
-changeState();
-// Event listening.
-PROMPT_CLASS.addEventListener("input", (event) => {
-    const searchBar = event.target.closest("input");
-    if (!searchBar) {
-        return;
-    }
-    search = searchBar.value;
-    revert(true);
-    renderTable();
+PROMPT.addEventListener("input", (event) => {
+  const searchBar = event.target.closest("input");
+  if (!searchBar) {
+    return;
+  }
+  search = searchBar.value;
+  renderCards();
 });
 
-TABLE_CLASS.addEventListener("click", (event) => {
-    const cell = event.target.closest("th");
-    if (!cell) return;
+function handleCardClick(event) {
+  const card = event.target.closest(".person-card");
+  if (!card) {
+    return;
+  }
 
-    const value = cell.textContent;
+  const { action, classId, time, personId } = card.dataset;
 
-    switch (state) {
-    case SiteStatus.GROUPS:
-        selected_group = value;
-        changeState(SiteStatus.TIMES);
-        break;
-
-    case SiteStatus.TIMES:
-        selected_time = value;
-        changeState(SiteStatus.MEMBERS);
-        break;
-
-    case SiteStatus.MEMBERS:
-        selected_members.push(value);
-        renderMembers();
-        break;
+  if (action === "select-class") {
+    selectedClass = CLASSES.find((klass) => klass.id === classId) || null;
+    if (!selectedClass) {
+      setStatus("Class not found.", true);
+      return;
     }
-});
+    changeState(SiteStatus.TIMES);
+    return;
+  }
 
-MEMBERS_CLASS.addEventListener("click", (event) => {
-    const cell = event.target.closest("th");
-    if (!cell) return;
-    const value = cell.textContent;
-    selected_members = selected_members
-        .filter((member) => member !== value);
-    renderMembers();
-});
-
-SUBMIT_BUTTON.addEventListener("click", async () => {
-    const names = selected_members.join(",");
-    const options = {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: `{ "date": ${DATE},
-                "group_name": ${selected_group},
-                "names": ${names} }`
-    }
-    try {
-        const response = await fetch(RECORD_URL, options);
-        const data = await response;
-        console.log(data);
-    } catch (error) {
+  if (action === "select-time") {
+    selectedTime = time;
+    loadClassPeople(selectedClass.id)
+      .then(() => changeState(SiteStatus.MEMBERS))
+      .catch((error) => {
         console.error(error);
+        setStatus("Could not load registered people for this class.", true);
+      });
+    return;
+  }
+
+  if (action === "select-person") {
+    const person = classPeople.find((item) => item.id === personId);
+    if (!person) {
+      return;
     }
-    // location.reload();
+    if (!selectedMembers.some((member) => member.id === person.id)) {
+      selectedMembers.push(person);
+    }
+    renderPrompt("Select Attendees", "Tap a name card to check in", {
+      showSubmit: true,
+    });
+    renderSelected();
+    renderCards();
+    return;
+  }
+
+  if (action === "remove") {
+    selectedMembers = selectedMembers.filter((member) => member.id !== personId);
+    renderPrompt("Select Attendees", "Tap a name card to check in", {
+      showSubmit: true,
+    });
+    renderSelected();
+    renderCards();
+  }
+}
+
+CARDS.addEventListener("click", handleCardClick);
+SELECTED.addEventListener("click", handleCardClick);
+
+FOOTER.addEventListener("click", (event) => {
+  if (!event.target.closest(".back_button")) {
+    return;
+  }
+  changeState(SiteStatus.CLASSES);
 });
 
-FOOTER_CLASS.addEventListener("click", () => {
-    selected_group = "";
-    selected_time = "";
-    selected_members = [];
-    changeState(SiteStatus.GROUPS);
-});
+try {
+  await changeState(SiteStatus.CLASSES);
+} catch (error) {
+  console.error(error);
+  setStatus("Unable to load BCM classes. Is the API running?", true);
+}

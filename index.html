@@ -1,42 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCM Group Attendance</title>
-    <link rel   = "icon"
-          href  = "favicon.png"
-          sizes = "64x64"
-          type  = "image/x-icon">
-    <link rel   = "stylesheet"
-          href  = "index.css">
+    <title>BCM Group Attendance | UofSC</title>
+    <link rel="icon" href="favicon.png" sizes="64x64" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
   </head>
-  <body class = "page-layout">
-    <div class = "page-layout_banner">
-      <img class = "page-layout_banner-logo"
-           src = "BCM+72+ppi+.webp"
-           alt = "BCM Group logo">
-      <h1>BCM GROUP<br>ATTENDANCE</h1>
-    </div>
-    <div class = "page-layout_prompt">
-      <h1>Select Your Group</h1>
-      <h2>Start typing</h2>
-      <button class      = "submit_button">
-        SUBMIT
-        </button>
-      <input type        = "text"
-             placeholder = "Type a group leaders&#39; name">
-    </div>
-    <div class   = "page-layout_members">
-    </div>
-    <div class   = "page-layout_table"></div>
-    <div class   = "page-layout_footer">
-      <button class = "back_button"
-              type  = "button">
-        RESET
-      </button>
-    </div>
-    <script type = "module"
-            src  = "index.js">
-    </script>
-</body>
+  <body class="page-layout">
+    <header class="page-layout_banner">
+      <img class="page-layout_banner-logo" src="BCM+72+ppi+.webp" alt="BCM at UofSC logo">
+      <div class="page-layout_banner-copy">
+        <p class="page-layout_banner-org">BCM at UofSC</p>
+        <h1>Class Attendance</h1>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-layout_prompt" aria-live="polite"></section>
+      <section class="page-layout_selected" aria-label="Selected attendees"></section>
+      <section class="page-layout_cards" aria-label="Selectable items"></section>
+      <p class="page-layout_status" role="status" aria-live="polite"></p>
+    </main>
+
+    <footer class="page-layout_footer">
+      <button class="back_button" type="button">RESET</button>
+    </footer>
+
+    <script type="module" src="index.js"></script>
+  </body>
 </html>

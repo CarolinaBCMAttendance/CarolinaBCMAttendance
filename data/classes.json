@@ -1,0 +1,62 @@
+[
+  {
+    "id": "class-01",
+    "name": "Tuesday Night Gathering",
+    "leaders": ["Ava Johnson", "Liam Smith", "Noah Williams"]
+  },
+  {
+    "id": "class-02",
+    "name": "Wednesday Bible Study",
+    "leaders": ["Emma Brown", "Olivia Jones", "Sophia Hernandez"]
+  },
+  {
+    "id": "class-03",
+    "name": "Thursday Discipleship",
+    "leaders": ["Mason Wilson", "Lucas Lopez", "Ethan Thomas"]
+  },
+  {
+    "id": "class-04",
+    "name": "Freshman Connect",
+    "leaders": ["Isabella Gonzalez", "Mia Anderson", "Amelia Rodriguez"]
+  },
+  {
+    "id": "class-05",
+    "name": "Upperclassmen Fellowship",
+    "leaders": ["James Davis", "Benjamin Martinez", "Elijah Garcia"]
+  },
+  {
+    "id": "class-06",
+    "name": "Worship Team Class",
+    "leaders": ["Charlotte Miller", "Harper Taylor", "Evelyn Jackson"]
+  },
+  {
+    "id": "class-07",
+    "name": "Men's Accountability",
+    "leaders": ["Henry White", "Alexander Martin", "Daniel Perez"]
+  },
+  {
+    "id": "class-08",
+    "name": "Women's Bible Study",
+    "leaders": ["Abigail Lee", "Emily Thompson", "Elizabeth Harris"]
+  },
+  {
+    "id": "class-09",
+    "name": "International Students",
+    "leaders": ["Michael Scott", "Matthew Scott", "Samuel King"]
+  },
+  {
+    "id": "class-10",
+    "name": "Community Group Alpha",
+    "leaders": ["Sofia Clark", "Grace Wright", "Chloe Torres"]
+  },
+  {
+    "id": "class-11",
+    "name": "Community Group Beta",
+    "leaders": ["Jackson Sanchez", "David Nguyen", "Joseph Flores"]
+  },
+  {
+    "id": "class-12",
+    "name": "Saturday Outreach",
+    "leaders": ["Victoria Hill", "Scarlett Allen", "Hannah Gomez"]
+  }
+]
