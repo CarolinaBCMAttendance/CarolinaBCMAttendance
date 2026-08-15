@@ -1,4 +1,16 @@
 // Classes/sections.
+const today = new Date();
+const currentDay = today.getDay();
+let daysToSubtract = (currentDay - 2 + 7) % 7;
+if (daysToSubtract === 0) {
+    daysToSubtract = 7;
+}
+const lastTuesday = new Date(today);
+lastTuesday.setDate(today.getDate() - daysToSubtract);
+const yyyy = lastTuesday.getFullYear();
+const mm = String(lastTuesday.getMonth() + 1).padStart(2, '0');
+const dd = String(lastTuesday.getDate()).padStart(2, '0');
+const DATE = `${yyyy}-${mm}-${dd}`;
 const PROMPT_CLASS = document.querySelector(".page-layout_prompt");
 const SUBMIT_BUTTON = document.querySelector(".submit_button");
 const MEMBERS_CLASS = document.querySelector(".page-layout_members");
@@ -26,7 +38,6 @@ async function getReq(url) {
     try {
         const response = await fetch(url, options);
         const data = await response.json();
-        console.log(data);
         return data;
     } catch (error) {
         console.error(error);
@@ -186,27 +197,56 @@ PROMPT_CLASS.addEventListener("input", (event) => {
     renderTable();
 });
 
-TABLE_CLASS.addEventListener("click", async (event) => {
-    
-})
+TABLE_CLASS.addEventListener("click", (event) => {
+    const cell = event.target.closest("th");
+    if (!cell) return;
 
-SUBMIT_BUTTON.addEventListener('click', async (event) => {
-    selected_members.forEach((member) => {
-        console.log(member);
-    })
-    // const options = {
-    //     method: 'POST',
-    //     headers: {'Content-Type': 'application/json'},
-    //     body: {name: }
-    // };
+    const value = cell.textContent;
 
-    // try {
-    //     const response = await fetch(STUDENT_URL, options);
-    //     const data = await response.json();
-    //     console.log(data);
-    // } catch (error) {
-    //     console.error(error);
-    // }
+    switch (state) {
+    case SiteStatus.GROUPS:
+        selected_group = value;
+        changeState(SiteStatus.TIMES);
+        break;
+
+    case SiteStatus.TIMES:
+        selected_time = value;
+        changeState(SiteStatus.MEMBERS);
+        break;
+
+    case SiteStatus.MEMBERS:
+        selected_members.push(value);
+        renderMembers();
+        break;
+    }
+});
+
+MEMBERS_CLASS.addEventListener("click", (event) => {
+    const cell = event.target.closest("th");
+    if (!cell) return;
+    const value = cell.textContent;
+    selected_members = selected_members
+        .filter((member) => member !== value);
+    renderMembers();
+});
+
+SUBMIT_BUTTON.addEventListener("click", async () => {
+    const names = selected_members.join(",");
+    const options = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: `{ "date": ${DATE},
+                "group_name": ${selected_group},
+                "names": ${names} }`
+    }
+    try {
+        const response = await fetch(RECORD_URL, options);
+        const data = await response;
+        console.log(data);
+    } catch (error) {
+        console.error(error);
+    }
+    // location.reload();
 });
 
 FOOTER_CLASS.addEventListener("click", () => {
