@@ -36,7 +36,7 @@ const STUDENT_URL = `${DOMAIN}/`;
 const GROUP_URL = `${DOMAIN}/groups`;
 async function getReq(url) {
     const options = {method: 'GET',
-                    headers: new Headers({"ngrok-skip-browser-warning": "69420"})};
+                    headers: {"ngrok-skip-browser-warning" : "69420"}}
     try {
         const response = await fetch(url, options);
         const data = await response.json();
@@ -241,7 +241,7 @@ SUBMIT_BUTTON.addEventListener("click", async () => {
     const options = {
         method: 'POST',
         headers: {'Content-Type': 'application/json',
-                    new Headers({"ngrok-skip-browser-warning": "69420"})},
+                    "ngrok-skip-browser-warning": "69420"},
         body: JSON.stringify({
         date: DATE,
         group_name: selected_group,
