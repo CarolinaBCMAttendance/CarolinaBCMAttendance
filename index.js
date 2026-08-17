@@ -255,7 +255,7 @@ SUBMIT_BUTTON.addEventListener("click", async () => {
     } catch (error) {
         console.error(error);
     }
-    // location.reload();
+    location.reload();
 });
 
 FOOTER_CLASS.addEventListener("click", () => {
