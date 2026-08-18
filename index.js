@@ -128,7 +128,7 @@ function renderTable() {
             if (state === SiteStatus.TIMES) {
                 return true;
             }
-            const rowText = getRowText(row).toLowerCase();
+            const rowText = String(getRowText(row) || "").toLowerCase();
             return rowText.includes(normalizedSearch);
         })
         .forEach((row) => {
@@ -170,7 +170,6 @@ function changeState(newState = state) {
             "Start typing"
         );
         renderTable();
-        
         break;
     case SiteStatus.TIMES:
         renderPrompt(
@@ -238,12 +237,13 @@ MEMBERS_CLASS.addEventListener("click", (event) => {
 });
 
 NEW_BUTTON.addEventListener("click", async () => {
+    if(!search)
     const options = {
         method: 'POST',
         headers: {'Content-Type': 'application/json',
                     "ngrok-skip-browser-warning": "69420"},
         body: JSON.stringify({
-            name: search.value
+            name: search
         })
     }
     try {
@@ -253,7 +253,7 @@ NEW_BUTTON.addEventListener("click", async () => {
     } catch (error) {
         console.error(error);
     }
-    PEOPLE.push(search.value)
+    PEOPLE.push({name: search})
     renderTable()
 });
 
