@@ -212,7 +212,7 @@ TABLE_CLASS.addEventListener("click", (event) => {
     switch (state) {
     case SiteStatus.GROUPS:
         selected_group = value;
-        changeState(SiteStatus.TIMES);
+        changeState(SiteStatus.MEMBERS);
         break;
 
     case SiteStatus.TIMES:
