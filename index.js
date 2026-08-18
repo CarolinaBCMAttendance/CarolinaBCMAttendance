@@ -75,14 +75,14 @@ function renderPrompt(top, bottom) {
     switch(state) {
     case SiteStatus.GROUPS:
         searchBar.placeholder =
-            "Type a group leaders' name";
+            "Type a group leader's first name";
         SUBMIT_BUTTON.style.display = "none";
         NEW_BUTTON.style.display = "none";
         break;
     case SiteStatus.MEMBERS:
         SUBMIT_BUTTON.style.display = "";
         NEW_BUTTON.style.display = "";
-        searchBar.placeholder = "Type a member's name";
+        searchBar.placeholder = "First Last";
         break;
     default:
         searchBar.placeholder = "";
@@ -181,7 +181,7 @@ function changeState(newState = state) {
     case SiteStatus.MEMBERS:
         renderPrompt(
             "Select Your Group Members",
-            "Search below"
+            "First Last"
         );
         renderTable();
         break;
