@@ -75,7 +75,7 @@ function renderPrompt(top, bottom) {
     switch(state) {
     case SiteStatus.GROUPS:
         searchBar.placeholder =
-            "Type a group leader's first name";
+            "Group leader's first name";
         SUBMIT_BUTTON.style.display = "none";
         NEW_BUTTON.style.display = "none";
         break;
