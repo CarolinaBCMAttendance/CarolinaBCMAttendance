@@ -237,7 +237,7 @@ MEMBERS_CLASS.addEventListener("click", (event) => {
 });
 
 NEW_BUTTON.addEventListener("click", async () => {
-    if(!search)
+    if(!search)return;
     const options = {
         method: 'POST',
         headers: {'Content-Type': 'application/json',
