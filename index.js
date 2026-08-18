@@ -13,6 +13,7 @@ const dd = String(lastTuesday.getDate()).padStart(2, '0');
 const DATE = `${yyyy}-${mm}-${dd}`;
 const PROMPT_CLASS = document.querySelector(".page-layout_prompt");
 const SUBMIT_BUTTON = document.querySelector(".submit_button");
+const NEW_BUTTON = document.querySelector(".new_button");
 const MEMBERS_CLASS = document.querySelector(".page-layout_members");
 const TABLE_CLASS = document.querySelector(".page-layout_table");
 const FOOTER_CLASS = document.querySelector(".page-layout_footer");
@@ -30,6 +31,7 @@ let search = "";
 let selected_group = "";
 let selected_time  = "";
 let selected_members = [];
+// const DOMAIN = 'http://localhost:3000/api/v1/bcm';
 const DOMAIN = 'https://stinky-impose-thigh.ngrok-free.dev/api/v1/bcm';
 const RECORD_URL = `${DOMAIN}/record`;
 const STUDENT_URL = `${DOMAIN}/`;
@@ -75,15 +77,18 @@ function renderPrompt(top, bottom) {
         searchBar.placeholder =
             "Type a group leaders' name";
         SUBMIT_BUTTON.style.display = "none";
+        NEW_BUTTON.style.display = "none";
         break;
     case SiteStatus.MEMBERS:
         SUBMIT_BUTTON.style.display = "";
+        NEW_BUTTON.style.display = "";
         searchBar.placeholder = "Type a member's name";
         break;
     default:
         searchBar.placeholder = "";
     }
     PROMPT_CLASS.appendChild(SUBMIT_BUTTON);
+    PROMPT_CLASS.appendChild(NEW_BUTTON);
     // Hide search bar on the time-selection screen.
     if (state !== SiteStatus.TIMES) {
         PROMPT_CLASS.appendChild(searchBar);
@@ -230,6 +235,26 @@ MEMBERS_CLASS.addEventListener("click", (event) => {
     selected_members = selected_members
         .filter((member) => member !== value);
     renderMembers();
+});
+
+NEW_BUTTON.addEventListener("click", async () => {
+    const options = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',
+                    "ngrok-skip-browser-warning": "69420"},
+        body: JSON.stringify({
+            name: search.value
+        })
+    }
+    try {
+        const response = await fetch(STUDENT_URL, options);
+        const data = await response;
+        console.log(data);
+    } catch (error) {
+        console.error(error);
+    }
+    PEOPLE.push(search.value)
+    renderTable()
 });
 
 SUBMIT_BUTTON.addEventListener("click", async () => {

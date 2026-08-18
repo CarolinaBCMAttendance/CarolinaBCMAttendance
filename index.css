@@ -96,7 +96,7 @@ h2 {
     box-shadow: -1px 1px 10px black;
 }
 
-.submit_button {
+.submit_button .new_button {
     display: block;
     margin: 0 auto;
     margin-bottom: 12px;
@@ -106,6 +106,10 @@ h2 {
     border-color: grey;
     border-radius: 6px;
     box-shadow: -1px 1px 10px black;
+}
+
+.new_button {
+    background: aquamarine;
 }
 
 .back_button {
