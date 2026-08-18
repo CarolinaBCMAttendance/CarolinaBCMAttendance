@@ -243,7 +243,7 @@ NEW_BUTTON.addEventListener("click", async () => {
         headers: {'Content-Type': 'application/json',
                     "ngrok-skip-browser-warning": "69420"},
         body: JSON.stringify({
-            name: search
+        name: search
         })
     }
     try {
