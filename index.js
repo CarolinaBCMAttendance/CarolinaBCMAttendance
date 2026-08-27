@@ -2,9 +2,6 @@
 const today = new Date();
 const currentDay = today.getDay();
 let daysToSubtract = (currentDay - 2 + 7) % 7;
-if (daysToSubtract === 0) {
-    daysToSubtract = 7;
-}
 const lastTuesday = new Date(today);
 lastTuesday.setDate(today.getDate() - daysToSubtract);
 const yyyy = lastTuesday.getFullYear();
