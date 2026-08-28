@@ -9,12 +9,15 @@ public sealed class MockDirectorySearchService : IDirectorySearchService
     private readonly IReadOnlyList<DirectoryDomainOptions> _domains;
     private readonly IReadOnlyList<SampleDirectoryUser> _users;
 
-    public MockDirectorySearchService(IOptions<DirectoryOptions> options)
-        : this(options.Value.Domains) { }
-
-    public MockDirectorySearchService(IEnumerable<DirectoryDomainOptions>? domains = null)
+    public MockDirectorySearchService()
+        : this(Microsoft.Extensions.Options.Options.Create(new DirectoryOptions()))
     {
-        _domains = (domains ?? DirectoryOptions.CreateDefaultDomains()).ToArray();
+    }
+
+    public MockDirectorySearchService(IOptions<DirectoryOptions> options)
+    {
+        var domains = options.Value.Domains;
+        _domains = (domains.Count > 0 ? domains : DirectoryOptions.CreateDefaultDomains()).ToArray();
         _users = CreateSampleUsers();
     }
 
