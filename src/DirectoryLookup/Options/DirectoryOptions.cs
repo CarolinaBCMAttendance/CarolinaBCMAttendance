@@ -16,7 +16,7 @@ public sealed class DirectoryOptions
 
     public string? BindDomain { get; set; }
 
-    public List<DirectoryDomainOptions> Domains { get; set; } = CreateDefaultDomains();
+    public List<DirectoryDomainOptions> Domains { get; set; } = [];
 
     public static List<DirectoryDomainOptions> CreateDefaultDomains() =>
     [

@@ -151,6 +151,7 @@
         var configured = DirectorySettings.Value.Domains
             .Select(domain => domain.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         _domains.AddRange(configured.Count > 0 ? configured : DirectoryOptions.CreateDefaultDomains().Select(domain => domain.Name));
     }

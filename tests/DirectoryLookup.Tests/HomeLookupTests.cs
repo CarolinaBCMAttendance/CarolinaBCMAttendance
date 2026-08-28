@@ -16,12 +16,9 @@ public class HomeLookupTests : TestContext
         var fake = RegisterServices();
         var cut = RenderComponent<Home>();
 
-        var select = cut.Find("#domain");
-        Assert.Equal("", select.GetAttribute("value") ?? "");
-        Assert.Contains("Select a domain", select.InnerHtml);
-        Assert.Contains("agf-test.local", select.InnerHtml);
-        Assert.Contains("agfirst.net", select.InnerHtml);
-        Assert.Contains("training.local", select.InnerHtml);
+        var options = cut.FindAll("#domain option");
+        Assert.Equal(["", "agf-test.local", "agfirst.net", "training.local"], options.Select(option => option.GetAttribute("value") ?? "").ToArray());
+        Assert.Contains("Select a domain", options[0].TextContent);
         Assert.Equal(0, fake.CallCount);
     }
 
